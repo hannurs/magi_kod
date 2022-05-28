@@ -2,6 +2,7 @@ from sklearn.feature_selection import f_classif, SelectKBest, mutual_info_classi
 from FeatureSelectionMethod import FeatureSelectionMethod
 import minepy
 import numpy as np
+import skrebate
 
 class ANOVA(FeatureSelectionMethod):
     filterMethod = True
@@ -49,6 +50,24 @@ class MaximalInformationCoefficient(FeatureSelectionMethod):
         feature_scores = []
         for mic_score in mic:
             feature_scores.append(mic_score[0])
+
+        fi_dict = {}
+        best_features = np.argpartition(feature_scores, -k)[-k:]
+        for i in best_features:
+            fi_dict[predictors[i]] = feature_scores[i]
+
+        self.saveToPickle(fi_dict, k, data_filename)
+
+        
+class ReliefF(FeatureSelectionMethod):
+    filterMethod = True
+    
+    @classmethod
+    def saveKBestFeatures(self, k, data_filename):
+        predictors, Xdata, Ydata = super().getTrainData(data_filename)
+        selector = skrebate.ReliefF()
+        selector.fit(Xdata, Ydata)
+        feature_scores = selector.feature_importances_
 
         fi_dict = {}
         best_features = np.argpartition(feature_scores, -k)[-k:]
