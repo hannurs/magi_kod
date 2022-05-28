@@ -1,4 +1,4 @@
-from FilterMethods import ANOVA
+from FilterMethods import ANOVA, MaximalInformationCoefficient, MutualInformation
 
-print(ANOVA.getKBestFeatures(5, "csv_result-easy.csv"))
-ANOVA.plotKBestFeatures(10, "csv_result-easy.csv")
+print(MaximalInformationCoefficient.getKBestFeatures(5, "csv_result-easy.csv"))
+# MutualInformation.plotKBestFeatures(7, "csv_result-easy.csv")

@@ -11,12 +11,12 @@ class FeatureSelectionMethod(ABC):
     path_to_traindata_dir = "databases/extracted/train"
     path_to_testdata_dir = "databases/extracted/test"
     path_to_figures_dir = "figures"
-    path_to_scores_dir = "scores"
+    path_to_features = "selected_features"
     filterMethod = False
 
     @classmethod
     def saveToPickle(self, features, k, data_filename):
-        with open(self.path_to_scores_dir + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl", "wb") as f:
+        with open(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl", "wb") as f:
             pickle.dump(features, f)
 
     @classmethod
@@ -26,21 +26,22 @@ class FeatureSelectionMethod(ABC):
 
     @classmethod
     def plotKBestFeatures(self, k, data_filename, show=False):
+        if not self.filterMethod:
+            return
         features = self.getKBestFeatures(k, data_filename)
         plt.figure(figsize=(19,10))
         # if type(features) is dict:
         plt.bar(features.keys(), list(features.values()))
         plt.xticks(rotation="vertical")
-        plt.ylabel(self.__name__)
+        plt.ylabel(self.__name__ + " score")
         plt.xlabel("Feature name")
         plt.savefig(self.path_to_figures_dir + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".png")
 
     @classmethod
     def getKBestFeatures(self, k, data_filename):
-        if os.path.isfile(self.path_to_scores_dir + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl") == False:
+        if os.path.isfile(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl") == False:
             self.saveKBestFeatures(k, data_filename)
-            print("hello")
-        with open(self.path_to_scores_dir + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl", "rb") as f:
+        with open(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl", "rb") as f:
             return pickle.load(f)
 
     @classmethod
@@ -55,8 +56,6 @@ class FeatureSelectionMethod(ABC):
 
         return predictors, preprocessing.normalize(Xdata), Ydata
 
-
-    # @staticmethod
     @classmethod
     def getTrainData(self, data_filename):
         return self.getData(self.path_to_traindata_dir + "/" + data_filename)
