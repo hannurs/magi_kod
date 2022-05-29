@@ -6,6 +6,7 @@ from sklearn.svm import SVC
 import statsmodels.api as sm
 from test import stepwise_selection
 import pandas as pd
+from genetic_selection import GeneticSelectionCV
 
 class ForwardSelection(FeatureSelectionMethod):
     @classmethod
@@ -93,4 +94,16 @@ class RecursiveFeatureElimination(FeatureSelectionMethod):
         eliminator.fit(Xdata, Ydata)
         features = eliminator.get_feature_names_out(predictors[:-1])
 
+        self.saveToPickle(features, k, data_filename)
+
+class GeneticAlgorithm(FeatureSelectionMethod):
+    @classmethod
+    def saveKBestFeatures(self, k, data_filename):
+        predictors, Xdata, Ydata = super().getTrainData(data_filename)
+
+        svm_ = SVC(kernel="linear")
+        selector = GeneticSelectionCV(svm_, cv=5, verbose=0,scoring="accuracy", max_features=k,n_population=100, crossover_proba=0.5,mutation_proba=0.2, n_generations=50,crossover_independent_proba=0.5,mutation_independent_proba=0.04,tournament_size=3, n_gen_no_change=10,caching=True, n_jobs=-1)
+        selector.fit(Xdata, Ydata)
+
+        features = selector.get_feature_names_out(predictors[:-1])
         self.saveToPickle(features, k, data_filename)

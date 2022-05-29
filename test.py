@@ -123,3 +123,28 @@ def stepwise_selection(X, y,
 
 # print('resulting features:')
 # print(result)
+
+from sklearn.datasets import load_breast_cancer
+from genetic_selection import GeneticSelectionCV
+from sklearn.tree import DecisionTreeClassifier
+import pandas as pd
+import numpy as np
+data = load_breast_cancer()
+df = pd.DataFrame(data.data, columns=data.feature_names)
+df['target'] = data.target
+X = df.drop(['target'], axis=1)
+y = df['target'].astype(float)
+estimator = DecisionTreeClassifier()
+model = GeneticSelectionCV(
+    estimator, cv=5, verbose=0,
+    scoring="accuracy", max_features=5,
+    n_population=100, crossover_proba=0.5,
+    mutation_proba=0.2, n_generations=50,
+    crossover_independent_proba=0.5,
+    mutation_independent_proba=0.04,
+    tournament_size=3, n_gen_no_change=10,
+    caching=True, n_jobs=-1)
+print(X)
+print(y)
+model = model.fit(X, y)
+print('Features:', X.columns[model.support_])
