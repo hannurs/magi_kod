@@ -1,6 +1,7 @@
 from FilterMethods import ANOVA, MaximalInformationCoefficient, MutualInformation, ReliefF
-from WrapperSelectionMethods import ForwardSelection, BackwardSelection
+from WrapperSelectionMethods import ForwardSelection, BackwardSelection, RecursiveFeatureElimination, StepwiseSelection
 
-print(ForwardSelection.getKBestFeatures(5, "csv_result-easy.csv"))
-print(BackwardSelection.getKBestFeatures(5, "csv_result-easy.csv"))
+print(StepwiseSelection.getKBestFeatures(5, "csv_result-easy.csv"))
+print(RecursiveFeatureElimination.getKBestFeatures(5, "csv_result-easy.csv"))
+# print(BackwardSelection.getKBestFeatures(5, "csv_result-easy.csv"))
 # MutualInformation.plotKBestFeatures(7, "csv_result-easy.csv")
