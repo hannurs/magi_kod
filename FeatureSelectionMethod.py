@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 class FeatureSelectionMethod(ABC):
     
-    path_to_traindata_dir = "databases/extracted/train"
-    path_to_testdata_dir = "databases/extracted/test"
+    path_to_traindata_dir = "extracted/train"
+    path_to_testdata_dir = "extracted/test"
     path_to_figures_dir = "figures"
     path_to_features = "selected_features"
     filterMethod = False
@@ -40,6 +40,8 @@ class FeatureSelectionMethod(ABC):
     @classmethod
     def getKBestFeatures(self, k, data_filename):
         if os.path.isfile(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl") == False:
+            # print("plik nie ị̣stnieje")
+            # print(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl")
             self.saveKBestFeatures(k, data_filename)
         with open(self.path_to_features + "/" + self.__name__ + "/" + data_filename[:-4] + str(k) + ".pkl", "rb") as f:
             return pickle.load(f)
