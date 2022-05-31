@@ -3,7 +3,7 @@ from WrapperSelectionMethods import ForwardSelection, BackwardSelection, Genetic
 import os
 
 path_to_files = "extracted/train"
-for k in range(5, 15, 3):
+for k in range(5, 15, 2):
     for filename in os.listdir(path_to_files):
         print("ANOVA: ", k, " features, ", filename)
         print(ANOVA.getKBestFeatures(k, filename))
