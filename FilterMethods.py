@@ -65,7 +65,7 @@ class ReliefF(FeatureSelectionMethod):
     @classmethod
     def saveKBestFeatures(self, k, data_filename):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
-        selector = skrebate.ReliefF()
+        selector = skrebate.ReliefF(n_features_to_select=len(predictors)-1)
         selector.fit(Xdata, Ydata)
         feature_scores = selector.feature_importances_
 
