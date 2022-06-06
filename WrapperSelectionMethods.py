@@ -17,8 +17,8 @@ class ForwardSelection(FeatureSelectionMethod):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
         features = []
         svm_ = SVC(kernel="linear")
-        knn = KNeighborsClassifier(n_neighbors=3)
-        selector = SequentialFeatureSelector(knn, n_features_to_select=k)
+        # knn = KNeighborsClassifier(n_neighbors=3)
+        selector = SequentialFeatureSelector(svm_, n_features_to_select=k)
         # selector = SequentialFeatureSelector(knn, n_features_to_select=k)
         selector.fit(Xdata, Ydata)
         features = selector.get_feature_names_out(predictors[:-1])
@@ -30,8 +30,9 @@ class BackwardSelection(FeatureSelectionMethod):
     def saveKBestFeatures(self, k, data_filename):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
         features = []
-        knn = KNeighborsClassifier(n_neighbors=3)
-        selector = SequentialFeatureSelector(knn, n_features_to_select=k, direction="backward")
+        # knn = KNeighborsClassifier(n_neighbors=3)
+        svm_ = SVC(kernel="linear")
+        selector = SequentialFeatureSelector(svm_, n_features_to_select=k, direction="backward")
         selector.fit(Xdata, Ydata)
         features = selector.get_feature_names_out(predictors[:-1])
 
@@ -39,65 +40,98 @@ class BackwardSelection(FeatureSelectionMethod):
 
 class StepwiseSelection(FeatureSelectionMethod):
     @classmethod
-    def StepwiseSelectionMethod(self, Xdata, Ydata, k, threshold_in=0.01, threshold_out = 0.05, verbose=False):
-        included = []
-        while True:
-            changed=False
-            # forward step
-            excluded = list(set(Xdata.columns)-set(included))
-            new_pval = pd.Series(index=excluded)
-            for new_column in excluded:
-                model = sm.OLS(Ydata, sm.add_constant(pd.DataFrame(Xdata[included+[new_column]]))).fit()
-                new_pval[new_column] = model.pvalues[new_column]
-            best_pval = new_pval.min()
-            if best_pval < threshold_in:
-                best_feature = excluded[new_pval.argmin()]
-                included.append(best_feature)
-                changed=True
-                if verbose:
-                    print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
-
-            # backward step
-            model = sm.OLS(Ydata, sm.add_constant(pd.DataFrame(Xdata[included]))).fit()
-            # use all coefs except intercept
-            pvalues = model.pvalues.iloc[1:]
-            worst_pval = pvalues.max() # null if pvalues is empty
-            if worst_pval > threshold_out:
-                changed=True
-                worst_feature = included[pvalues.argmax()]
-                # print(worst_feature)
-                included.remove(worst_feature)
-                if verbose:
-                    print('Drop {:30} with p-value {:.6}'.format(worst_feature, worst_pval))
-            if not changed:
-                break
-            if len(included) == k:
-                break
-
-        return included
-
-    @classmethod
-    def saveKBestFeatures(self, k, data_filename):
-        predictors, Xdata, Ydata = super().getTrainData(data_filename)
-        Xdata = pd.DataFrame(Xdata, columns=predictors[:-1])
-        features = self.StepwiseSelectionMethod(Xdata, Ydata, k)
-
-        self.saveToPickle(features, k, data_filename)
-
-
-class RecursiveFeatureElimination(FeatureSelectionMethod):
-    @classmethod
-    def saveKBestFeatures(self, k, data_filename):
-        predictors, Xdata, Ydata = super().getTrainData(data_filename)
-        features = []
+    def StepwiseSelectionMethod(self, Xdata, Ydata, k):
+        # TODO zrobić implementacje forward i backward na auto
+        knn = KNeighborsClassifier(n_neighbors=10)
         svm_ = SVC(kernel="linear")
-        knn = KNeighborsClassifier(n_neighbors=3)
-        
-        eliminator = RFE(svm_, n_features_to_select=k)
-        eliminator.fit(Xdata, Ydata)
-        features = eliminator.get_feature_names_out(predictors[:-1])
+        selector_forward = SequentialFeatureSelector(knn, n_features_to_select=k)
+        # selector_forward = SequentialFeatureSelector(svm_, n_features_to_select="auto", tol=0.05, scoring="balanced_accuracy", n_jobs=4)
+        selector_forward.fit(Xdata, Ydata)
 
+        # features = selector_forward.get_feature_names_out(predictors[:-1])
+
+
+        selector_backward = SequentialFeatureSelector(svm_, n_features_to_select="auto", tol=0.05, scoring="balanced_accuracy", n_jobs=4)
+
+    # @classmethod
+    # def StepwiseSelectionMethod(self, Xdata, Ydata, k, threshold_in=0.01, threshold_out = 0.05, verbose=False):
+    #     included = []
+    #     while True:
+    #         changed=False
+    #         # forward step
+    #         excluded = list(set(Xdata.columns)-set(included))
+    #         new_pval = pd.Series(index=excluded)
+    #         for new_column in excluded:
+    #             model = sm.OLS(Ydata, sm.add_constant(pd.DataFrame(Xdata[included+[new_column]]))).fit()
+    #             new_pval[new_column] = model.pvalues[new_column]
+    #         best_pval = new_pval.min()
+    #         if best_pval < threshold_in:
+    #             best_feature = excluded[new_pval.argmin()]
+    #             included.append(best_feature)
+    #             changed=True
+    #             if verbose:
+    #                 print('Add  {:30} with p-value {:.6}'.format(best_feature, best_pval))
+
+    #         # backward step
+    #         model = sm.OLS(Ydata, sm.add_constant(pd.DataFrame(Xdata[included]))).fit()
+    #         # use all coefs except intercept
+    #         pvalues = model.pvalues.iloc[1:]
+    #         worst_pval = pvalues.max() # null if pvalues is empty
+    #         if worst_pval > threshold_out:
+    #             changed=True
+    #             worst_feature = included[pvalues.argmax()]
+    #             included.remove(worst_feature)
+    #             if verbose:
+    #                 print('Drop {:30} with p-value {:.6}'.format(worst_feature, worst_pval))
+    #         if not changed:
+    #             break
+    #         if len(included) == k:
+    #             break
+
+    #     return included
+
+    @classmethod
+    def saveKBestFeatures(self, k, data_filename):
+        predictors, Xdata, Ydata = super().getTrainData(data_filename)
+        Xdata_df = pd.DataFrame(Xdata, columns=predictors[:-1])
+        # features = self.StepwiseSelectionMethod(Xdata, Ydata, k)
+
+        knn = KNeighborsClassifier(n_neighbors=10)
+        svm_ = SVC(kernel="linear")
+
+        n_features_forward = 5 
+        n_features_backward = 3 
+        total_steps = int(k/(n_features_forward - n_features_backward)) + 1
+        features_selected = {}
+        features_not_selected = predictors[:-1]
+        for i in range(total_steps):
+            selector_forward = SequentialFeatureSelector(knn, n_features_to_select=n_features_forward)
+            # selector_forward = SequentialFeatureSelector(svm_, n_features_to_select="auto", tol=0.0001, scoring="balanced_accuracy", n_jobs=4)
+            selector_forward.fit(Xdata_df[features_not_selected].to_numpy(), Ydata)
+            # print(set(features_selected))
+            # print(set(selector_forward.get_feature_names_out(features_not_selected)))
+            features_selected = list(set(features_selected) | set(selector_forward.get_feature_names_out(features_not_selected)))
+            print(features_selected)
+
+            # selector_backward = SequentialFeatureSelector(svm_, n_features_to_select="auto", direction="backward", tol=0.0001, scoring="balanced_accuracy", n_jobs=4)
+            selector_backward = SequentialFeatureSelector(knn, n_features_to_select=len(features_selected)-n_features_backward, direction="backward")
+            selector_backward.fit(Xdata_df[features_selected].to_numpy(), Ydata)
+            features_selected = selector_backward.get_feature_names_out(features_selected)
+            print(features_selected)
+
+            features_not_selected = list(set(predictors[:-1]) - set(features_selected))
+
+
+        # LAST STEP
+        if len(features_selected) != k:
+            selector_backward = SequentialFeatureSelector(knn, n_features_to_select=k, direction="backward")
+            selector_backward.fit(Xdata_df[features_selected].to_numpy(), Ydata)
+            features_selected = selector_backward.get_feature_names_out(features_selected)
+            print(features_selected)
+
+        features = features_selected
         self.saveToPickle(features, k, data_filename)
+
 
 class GeneticAlgorithm(FeatureSelectionMethod):
     @classmethod
