@@ -17,9 +17,9 @@ class ForwardSelection(FeatureSelectionMethod):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
         features = []
         svm_ = SVC(kernel="linear")
-        # knn = KNeighborsClassifier(n_neighbors=3)
-        selector = SequentialFeatureSelector(svm_, n_features_to_select=k)
-        # selector = SequentialFeatureSelector(knn, n_features_to_select=k)
+        knn = KNeighborsClassifier(n_neighbors=10)
+        # selector = SequentialFeatureSelector(svm_, n_features_to_select=k)
+        selector = SequentialFeatureSelector(knn, n_features_to_select=k)
         selector.fit(Xdata, Ydata)
         features = selector.get_feature_names_out(predictors[:-1])
 
@@ -30,9 +30,10 @@ class BackwardSelection(FeatureSelectionMethod):
     def saveKBestFeatures(self, k, data_filename):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
         features = []
-        # knn = KNeighborsClassifier(n_neighbors=3)
+        knn = KNeighborsClassifier(n_neighbors=10)
         svm_ = SVC(kernel="linear")
-        selector = SequentialFeatureSelector(svm_, n_features_to_select=k, direction="backward")
+        selector = SequentialFeatureSelector(knn, n_features_to_select=k, direction="backward")
+        # selector = SequentialFeatureSelector(svm_, n_features_to_select=k, direction="backward")
         selector.fit(Xdata, Ydata)
         features = selector.get_feature_names_out(predictors[:-1])
 
@@ -205,4 +206,18 @@ class SimulatedAnnealing(FeatureSelectionMethod):
     def saveKBestFeatures(self, k, data_filename):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
         features = self.SimulatedAnnealingMethod(k, data_filename)
+        self.saveToPickle(features, k, data_filename)
+
+class RecursiveFeatureElimination(FeatureSelectionMethod):
+    @classmethod
+    def saveKBestFeatures(self, k, data_filename):
+        predictors, Xdata, Ydata = super().getTrainData(data_filename)
+        features = []
+        svm_ = SVC(kernel="linear")
+        knn = KNeighborsClassifier(n_neighbors=3)
+        
+        eliminator = RFE(svm_, n_features_to_select=k)
+        eliminator.fit(Xdata, Ydata)
+        features = eliminator.get_feature_names_out(predictors[:-1])
+
         self.saveToPickle(features, k, data_filename)

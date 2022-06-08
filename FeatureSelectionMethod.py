@@ -5,6 +5,7 @@ import csv
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+import pandas as pd
 
 class FeatureSelectionMethod(ABC):
     
@@ -48,15 +49,23 @@ class FeatureSelectionMethod(ABC):
 
     @classmethod
     def getData(self, path):
-        with open(path, "r") as f:
-            reader = csv.reader(f)
-            predictors = list(reader)[0]
+        # with open(path, "r") as f:
+        #     reader = csv.reader(f)
+        #     predictors = list(reader)[0]
         
-        alldata = np.loadtxt(open(path, "rb"), delimiter=",", skiprows=1)
-        Xdata = alldata[:, :-1]
-        Ydata = alldata[:, -1]
+        # alldata = np.loadtxt(open(path, "rb"), delimiter="\t", skiprows=1)
+        alldata = pd.read_csv(path, sep="\t")
+        # print(alldata)
+        predictors = alldata.columns
+        # Xdata = alldata[:, :-1]
+        # Ydata = alldata[:, -1]
+        Xdata = alldata.iloc[:, 1:-1]
+        Ydata = alldata.iloc[:, -1]
+        # print(predictors)
+        # print(Xdata)
+        # print(Ydata)
 
-        return predictors, preprocessing.normalize(Xdata), Ydata
+        return predictors[1:], preprocessing.normalize(Xdata, axis=0), Ydata
 
     @classmethod
     def getTrainData(self, data_filename):

@@ -44,6 +44,7 @@ class MaximalInformationCoefficient(FeatureSelectionMethod):
     @classmethod
     def saveKBestFeatures(self, k, data_filename):
         predictors, Xdata, Ydata = super().getTrainData(data_filename)
+        Ydata = Ydata.to_numpy()
         Ydata2D = np.reshape(Ydata, (len(Ydata), 1))
         mic, tic = minepy.cstats(Xdata.T, Ydata2D.T)
 
