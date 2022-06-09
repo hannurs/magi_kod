@@ -61,9 +61,6 @@ class FeatureSelectionMethod(ABC):
         # Ydata = alldata[:, -1]
         Xdata = alldata.iloc[:, 1:-1]
         Ydata = alldata.iloc[:, -1]
-        # print(predictors)
-        # print(Xdata)
-        # print(Ydata)
 
         return predictors[1:], preprocessing.normalize(Xdata, axis=0), Ydata
 

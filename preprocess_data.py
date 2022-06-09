@@ -145,7 +145,7 @@ def splitDataset(filename, ratio):
             test_data.append(sample_)
 
 def splitHowWeType():
-    df = pd.read_csv("out.csv", sep="\t")
+    df = pd.read_csv("test.csv", sep="\t")
     df.drop('Unnamed: 0', inplace=True, axis=1)
     test_samples = random.sample(range(0, 50), 10)
     test = df.apply(lambda row: row[df["stimulus_index"].isin(test_samples)])
@@ -158,6 +158,34 @@ def splitHowWeType():
     test.to_csv("extracted/test/HowWetypeTEST.csv", sep="\t")
     train.to_csv("extracted/train/HowWetypeTRAIN.csv", sep="\t")
 
+def dummiesInHowWeType():
+    df = pd.read_csv("out.csv", sep="\t")
+    df.drop('Unnamed: 0', inplace=True, axis=1)
+
+    df_dummies = pd.get_dummies(df["finger"])
+    df = pd.concat([df, df_dummies], axis=1).reindex(df.index)
+    df.drop("finger", axis=1, inplace=True)
+
+    df_dummies = pd.get_dummies(df["input"])
+    df = pd.concat([df, df_dummies], axis=1).reindex(df.index)
+    df.drop("input", axis=1, inplace=True)
+    
+    df_uid = df.pop("uid")
+    df["uid"] = df_uid
+
+    # print(df.isnull().sum().sum())
+    # rows_with_nan = []
+    # for index, row in df.iterrows():
+    #     is_nan_series = row.isnull()
+    #     if is_nan_series.any():
+    #         rows_with_nan.append(index)
+    # print(rows_with_nan)
+
+    df.fillna('0', inplace=True)
+
+    df.to_csv("test.csv", sep="\t")
+
+# dummiesInHowWeType()
 splitHowWeType()
 # extractHowWeTypeData()
     # with open(filename[:-4] + "TRAIN.csv", "w", newline="") as f:
