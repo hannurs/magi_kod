@@ -36,9 +36,12 @@ for k in range(5, 15, 2):
         print("ForwardSelection: ", k, " features, ", filename)
         print(ForwardSelection.getKBestFeatures(k, filename))
         print()
-        print("BackwardSelection: ", k, " features, ", filename)
-        print(BackwardSelection.getKBestFeatures(k, filename))
-        print()
+        if filename == "HowWetypeTRAIN.csv":
+            pass
+        else:
+            print("BackwardSelection: ", k, " features, ", filename)
+            print(BackwardSelection.getKBestFeatures(k, filename))
+            print()
         print("StepwiseSelection: ", k, " features, ", filename)
         print(StepwiseSelection.getKBestFeatures(k, filename))
         print()
